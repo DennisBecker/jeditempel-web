@@ -1,0 +1,36 @@
+---
+import "agnostic-css/src/components/table/table.css";
+
+import Layout from '../layouts/Layout.astro';
+
+const response = await fetch('http://miniserver:8080/guilds');
+const guilds = await response.json();
+---
+
+<Layout>
+	<div class="container">
+		<h1>Gilden der Allianz</h1>
+		<table class="table">
+		 	<thead>
+		 		<tr>
+		 			<th>Name</th>
+					<th>Galactic Power</th>
+		 			<th>Members</th>
+		 		</tr>
+		 	</thead>
+		 	<tbody>
+				{guilds.map(guild => (
+					<tr>
+						<td><a href={"/guild/" + guild.guildId}>{guild.name}</a></td>
+						<td>{guild.guildGalacticPower.toLocaleString()}</td>
+						<td>{guild.memberCount}</td>
+					</tr>
+				))}
+		 	</tbody>
+		</table>
+	</div>
+</Layout>
+
+<style>
+	
+</style>
