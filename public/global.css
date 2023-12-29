@@ -1,6 +1,12 @@
 :root {
     --agnostic-header-content-width: 80%;
-  }
+    --agnostic-h6: 0.75rem;
+    --agnostic-h5: 1rem;
+    --agnostic-h4: 1.125rem;
+    --agnostic-h3: 1.25rem;
+    --agnostic-h2: 1.5rem;
+    --agnostic-h1: 2rem;
+}
 
 main {
     padding-block-start: 4rem;
@@ -8,45 +14,45 @@ main {
     display: grid;
     justify-items: center;
 }
-  
-  :where(body) {
+
+:where(body) {
     font-family: var(--agnostic-font-family-body);
     font-size: var(--agnostic-body);
     color: var(--agnostic-font-color);
     -webkit-font-smoothing: antialiased;
-  }
-  
-  :where(h1) {
+}
+
+:where(h1) {
     font-size: var(--agnostic-h1);
-  }
-  
-  :where(h2) {
+}
+
+:where(h2) {
     font-size: var(--agnostic-h2);
-  }
-  
-  :where(h3) {
+}
+
+:where(h3) {
     font-size: var(--agnostic-h3);
-  }
-  
-  :where(h4) {
+}
+
+:where(h4) {
     font-size: var(--agnostic-h4);
-  }
-  
-  :where(h5) {
+}
+
+:where(h5) {
     font-size: var(--agnostic-h5);
-  }
-  
-  :where(h6) {
+}
+
+:where(h6) {
     font-size: var(--agnostic-h6);
-  }
-  
-  :where(img, picture, canvas, video, iframe) {
+}
+
+:where(img, picture, canvas, video, iframe) {
     max-inline-size: 100%;
     block-size: auto;
     vertical-align: middle;
-  }
+}
 
-  /* This is the dark / light mode color switcher button in the header */
+/* This is the dark / light mode color switcher button in the header */
 .toggle {
     filter: grayscale(40%);
     background: transparent;
@@ -58,17 +64,17 @@ main {
     padding-inline-end: var(--fluid-12);
     padding-block-start: var(--fluid-2);
     padding-block-end: var(--fluid-2);
-  }
+}
 
-  .container {
+.container {
     width: 80%;
     max-inline-size: var(--agnostic-container-max-inline-size);
     padding-inline-start: var(--fluid-20);
     padding-inline-end: var(--fluid-20);
-  }
-  
-@media screen and (min-width: 420px) {
-    h1 {
-        font-size: 2.2rem;
+}
+
+@media (max-width: 576px) {
+    .container {
+        width: 100%;
     }
 }

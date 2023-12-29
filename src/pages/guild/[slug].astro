@@ -22,11 +22,10 @@ const { guild } = Astro.props;
     <div class="container">
         <h1>{guild.name}</h1>
 
-        <table class="table">
+        <table class="table table-responsive">
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Level</th>
                     <th>Galactic Power</th>
                     <th>Character Galactic Power</th>
                     <th>Ship Galactic Power</th>
@@ -37,7 +36,6 @@ const { guild } = Astro.props;
                     return (
                         <tr>
                             <td>{member.name}</td>
-                            <td>{member.level}</td>
                             <td>{member.galacticPower.toLocaleString()}</td>
                             <td>{member.characterGalacticPower.toLocaleString()}</td>
                             <td>{member.shipGalacticPower.toLocaleString()}</td>
