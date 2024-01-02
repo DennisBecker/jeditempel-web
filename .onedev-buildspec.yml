@@ -24,3 +24,34 @@ jobs:
   maxRetries: 3
   retryDelay: 30
   timeout: 3600
+- name: Build & Deploy
+  steps:
+  - !CheckoutStep
+    name: Checkout
+    cloneCredential: !DefaultCredential {}
+    withLfs: false
+    withSubmodules: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: build and deploy
+    runInContainer: false
+    interpreter: !DefaultInterpreter
+      commands:
+      - npm install
+      - npm run build
+      - ''
+      - netlify deploy --prod -d dist
+    useTTY: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  triggers:
+  - !BranchUpdateTrigger
+    branches: main
+    paths: src/
+    projects: DennisBecker/jeditempel-web
+  - !ScheduleTrigger
+    cronExpression: 0 0 7,19 ? * *
+    projects: DennisBecker/jeditempel-web
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 3600
