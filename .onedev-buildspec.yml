@@ -40,7 +40,7 @@ jobs:
       - npm install
       - npm run build
       - ''
-      - netlify deploy --prod -d dist
+      - netlify deploy --prod
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
