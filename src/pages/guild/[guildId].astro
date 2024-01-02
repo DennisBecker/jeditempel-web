@@ -4,23 +4,35 @@ import "agnostic-css/src/components/table/table.css";
 import Layout from "../../layouts/Layout.astro";
 
 export async function getStaticPaths() {
-    const response = await fetch("http://miniserver:8080/guilds/details");
+    const response = await fetch("http://localhost:8080/guilds");
     const guilds = await response.json();
 
-    return guilds.guildDetails.map((guild) => {
-        return {
-            params: { slug: guild.guildId },
-            props: { guild },
-        };
-    });
+    return await Promise.all(
+        guilds.map(async (guild) => {
+            const response = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
+            const members = await response.json();
+
+            return {
+                params: { guildId: guild.guildId },
+                props: { guild, members },
+            };
+        })
+    );
 }
 
-const { guild } = Astro.props;
+const { guild, members } = Astro.props;
 ---
 
 <Layout>
     <div class="container">
         <h1>{guild.name}</h1>
+
+        <nav aria-label="breadcrumbs">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href={"/guild/" + guild.guildId}>Overview</a></li>
+                <li class="breadcrumb-item"><a href={"/guild/" + guild.guildId + "/tb//rise-of-the-empire"}>Territory Battle</a></li>
+            </ol>
+        </nav>
 
         <table class="table table-responsive">
             <thead>
@@ -32,7 +44,7 @@ const { guild } = Astro.props;
                 </tr>
             </thead>
             <tbody>
-                {guild.playerProfiles.map((member) => {
+                {members.map((member) => {
                     return (
                         <tr>
                             <td>{member.name}</td>

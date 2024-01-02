@@ -1,0 +1,94 @@
+---
+import "agnostic-css/src/components/table/table.css";
+
+import Layout from "../../../../layouts/Layout.astro";
+import createSlug from "../../../../lib/createSlug";
+
+export async function getStaticPaths() {
+    const response = await fetch("http://localhost:8080/guilds");
+    const guilds = await response.json();
+
+    const params = await Promise.all(
+        guilds.map(async (guild) => {
+            const tbReponse = await fetch("http://localhost:8080/territory-battles");
+            const tbs = await tbReponse.json();
+
+            const memberResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
+            const members = await memberResponse.json();
+
+            const guildUnitResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/platoons");
+            const guildUnits = await guildUnitResponse.json();
+
+            const foo = await Promise.all(tbs.flatMap(async (tb) => {
+                const response = await fetch("http://localhost:8080/territory-battles/" + tb.id + "/platoons");
+                const platons = await response.json();
+
+                return {
+                    path: `/guilds/{guildId}/tb/{tbId}`,
+                    params: { guildId: guild.guildId, tbId: createSlug(tb.name) },
+                    props: { guild, members, tb, platons, guildUnits }
+                };
+            }));
+
+            return foo.reduce(function(pre, cur) {
+                return pre.concat(cur);
+            });
+        })
+    );
+
+    return params;
+}
+
+const { guild, members, tb, platons, guildUnits } = Astro.props;
+
+function getGuildUnitQuantity(baseId, rarity, relicTier) {
+        return guildUnits.filter((unit) => 
+            unit.combatType === 1 
+            ? baseId === unit.baseId && rarity == unit.currentRarity && unit.currentRelicTier >= relicTier 
+            : baseId === unit.baseId && rarity == unit.currentRarity).length
+    }
+---
+
+<Layout>
+    <div class="container">
+        <h1>{guild.name}</h1>
+
+        <nav aria-label="breadcrumbs">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href={"/guild/" + guild.guildId}>Overview</a></li>
+                <li class="breadcrumb-item"><a href={"/guild/" + guild.guildId + "/tb//rise-of-the-empire"}>Territory Battle</a></li>
+            </ol>
+        </nav>
+
+        <h2>{tb.name}</h2>
+
+        <h3>Platoons</h3>
+        {platons.phases.map((phase) => (
+            <div>
+                <h4>Phase {phase.phase}</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Unit</th>
+                            <th>Rarity</th>
+                            <th>Relic</th>
+                            <th>Quantity</th>
+                            <th>Available in Guild</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {phase.platoons.map((platoon) => (
+                            <tr>
+                                <td>{platoon.unitName}</td>
+                                <td>{platoon.rarity}</td>
+                                <td>{platoon.relicTier}</td>
+                                <td>{platoon.quantity}</td>
+                                <td>{getGuildUnitQuantity(platoon.unitId, platoon.rarity, platoon.relicTier)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        ))}
+    </div>
+</Layout>
