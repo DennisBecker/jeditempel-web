@@ -1,0 +1,20 @@
+version: 26
+jobs:
+- name: Mirror GitHub
+  steps:
+  - !PullRepository
+    name: pull
+    remoteUrl: https://github.com/DennisBecker/jeditempel-web
+    syncToChildProject: false
+    passwordSecret: access-token
+    refs: refs/heads/* refs/tags/*
+    withLfs: false
+    force: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  triggers:
+  - !ScheduleTrigger
+    cronExpression: '* 0/10 * ? * *'
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 3600
