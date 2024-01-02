@@ -7,7 +7,7 @@ jobs:
     remoteUrl: https://github.com/DennisBecker/jeditempel-web
     passwordSecret: access-token
     force: false
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    condition: ALWAYS
   - !PullRepository
     name: pull
     remoteUrl: https://github.com/DennisBecker/jeditempel-web
@@ -16,7 +16,7 @@ jobs:
     refs: refs/heads/* refs/tags/*
     withLfs: false
     force: false
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    condition: ALWAYS
   triggers:
   - !ScheduleTrigger
     cronExpression: 0 0/10 * ? * *
