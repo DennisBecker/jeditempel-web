@@ -10,6 +10,11 @@ const guilds = await response.json();
 <Layout>
 	<div class="container">
 		<h1>Gilden der Allianz</h1>
+		<p>Updated at {new Intl.DateTimeFormat('en-GB', {
+			dateStyle: 'short',
+			timeStyle: 'short',
+			timeZone: 'Europe/Berlin',
+		  }).format()}</p>
 		<table class="table">
 		 	<thead>
 		 		<tr>
