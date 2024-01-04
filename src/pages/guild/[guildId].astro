@@ -27,7 +27,7 @@ const { guild, members } = Astro.props;
             <div class="flex items-center">
                 <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
                     <li>
-                        <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Overview</a>
+                        <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Guild Overview</a>
                     </li>
                     <li>
                         <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="text-gray-900 dark:text-white hover:underline">Territor Battles</a>
@@ -38,17 +38,6 @@ const { guild, members } = Astro.props;
     </nav>
     <main class="container mx-auto pt-5 lg:pt-20">
         <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">{guild.name}</h1>
-
-        <div class="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
-            <ul class="flex flex-wrap -mb-px">
-                <li class="me-2">
-                    <a href={"/guild/" + guild.guildId} class="inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500" aria-current="page">Guild Overview</a>
-                </li>
-                <li class="me-2">
-                    <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Territor Battles</a>
-                </li>
-            </ul>
-        </div>
 
         <div class="relative overflow-x-auto lg:pt-20">
 			<table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
