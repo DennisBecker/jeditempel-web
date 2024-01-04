@@ -4,12 +4,12 @@ import "agnostic-css/src/components/table/table.css";
 import Layout from "../../layouts/Layout.astro";
 
 export async function getStaticPaths() {
-    const response = await fetch("http://localhost:8080/guilds");
+    const response = await fetch("http://miniserver:8080/guilds");
     const guilds = await response.json();
 
     return await Promise.all(
         guilds.map(async (guild) => {
-            const response = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
+            const response = await fetch("http://miniserver:8080/guilds/" + guild.guildId + "/players");
             const members = await response.json();
 
             return {

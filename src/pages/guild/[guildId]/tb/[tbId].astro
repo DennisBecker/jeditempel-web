@@ -5,22 +5,22 @@ import Layout from "../../../../layouts/Layout.astro";
 import createSlug from "../../../../lib/createSlug";
 
 export async function getStaticPaths() {
-    const response = await fetch("http://localhost:8080/guilds");
+    const response = await fetch("http://miniserver:8080/guilds");
     const guilds = await response.json();
 
     const params = await Promise.all(
         guilds.map(async (guild) => {
-            const tbReponse = await fetch("http://localhost:8080/territory-battles");
+            const tbReponse = await fetch("http://miniserver:8080/territory-battles");
             const tbs = await tbReponse.json();
 
-            const memberResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
+            const memberResponse = await fetch("http://miniserver:8080/guilds/" + guild.guildId + "/players");
             const members = await memberResponse.json();
 
-            const guildUnitResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/platoons");
+            const guildUnitResponse = await fetch("http://miniserver:8080/guilds/" + guild.guildId + "/platoons");
             const guildUnits = await guildUnitResponse.json();
 
             const foo = await Promise.all(tbs.flatMap(async (tb) => {
-                const response = await fetch("http://localhost:8080/territory-battles/" + tb.id + "/platoons");
+                const response = await fetch("http://miniserver:8080/territory-battles/" + tb.id + "/platoons");
                 const platons = await response.json();
 
                 return {
