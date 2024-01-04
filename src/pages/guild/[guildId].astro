@@ -1,15 +1,13 @@
 ---
-import "agnostic-css/src/components/table/table.css";
-
 import Layout from "../../layouts/Layout.astro";
 
 export async function getStaticPaths() {
-    const response = await fetch("http://miniserver:8080/guilds");
+    const response = await fetch("http://localhost:8080/guilds");
     const guilds = await response.json();
 
     return await Promise.all(
         guilds.map(async (guild) => {
-            const response = await fetch("http://miniserver:8080/guilds/" + guild.guildId + "/players");
+            const response = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
             const members = await response.json();
 
             return {
@@ -24,37 +22,57 @@ const { guild, members } = Astro.props;
 ---
 
 <Layout>
-    <div class="container">
-        <h1>{guild.name}</h1>
+    <nav class="bg-gray-50 dark:bg-gray-700">
+        <div class="max-w-screen-xl px-4 py-3 mx-auto">
+            <div class="flex items-center">
+                <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
+                    <li>
+                        <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Overview</a>
+                    </li>
+                    <li>
+                        <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="text-gray-900 dark:text-white hover:underline">Territor Battles</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto pt-5 lg:pt-20">
+        <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">{guild.name}</h1>
 
-        <nav aria-label="breadcrumbs">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href={"/guild/" + guild.guildId}>Overview</a></li>
-                <li class="breadcrumb-item"><a href={"/guild/" + guild.guildId + "/tb//rise-of-the-empire"}>Territory Battle</a></li>
-            </ol>
-        </nav>
+        <div class="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+            <ul class="flex flex-wrap -mb-px">
+                <li class="me-2">
+                    <a href={"/guild/" + guild.guildId} class="inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500" aria-current="page">Guild Overview</a>
+                </li>
+                <li class="me-2">
+                    <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Territor Battles</a>
+                </li>
+            </ul>
+        </div>
 
-        <table class="table table-responsive">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Galactic Power</th>
-                    <th>Character Galactic Power</th>
-                    <th>Ship Galactic Power</th>
-                </tr>
-            </thead>
-            <tbody>
-                {members.map((member) => {
-                    return (
-                        <tr>
-                            <td>{member.name}</td>
-                            <td>{member.galacticPower.toLocaleString()}</td>
-                            <td>{member.characterGalacticPower.toLocaleString()}</td>
-                            <td>{member.shipGalacticPower.toLocaleString()}</td>
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
-    </div>
+        <div class="relative overflow-x-auto lg:pt-20">
+			<table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+				<thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+					<tr>
+						<th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Name</th>
+						<th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Galactic Power</th>
+						<th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Character Galactic Power</th>
+						<th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Ship Galactic Power</th>
+					</tr>
+				</thead>
+				<tbody>
+					{members.map((member) => (
+						<tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800">
+							<th scope="row" class="px-3 py-3 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+								{member.name}
+							</th>
+							<td class="px-3 py-3 lg:px-6 lg:py-4">{member.galacticPower.toLocaleString()}</td>
+							<td class="px-3 py-3 lg:px-6 lg:py-4">{member.characterGalacticPower.toLocaleString()}</td>
+							<td class="px-3 py-3 lg:px-6 lg:py-4">{member.shipGalacticPower.toLocaleString()}</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+    </main>
 </Layout>

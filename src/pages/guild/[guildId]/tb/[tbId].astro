@@ -1,26 +1,24 @@
 ---
-import "agnostic-css/src/components/table/table.css";
-
 import Layout from "../../../../layouts/Layout.astro";
 import createSlug from "../../../../lib/createSlug";
 
 export async function getStaticPaths() {
-    const response = await fetch("http://miniserver:8080/guilds");
+    const response = await fetch("http://localhost:8080/guilds");
     const guilds = await response.json();
 
     const params = await Promise.all(
         guilds.map(async (guild) => {
-            const tbReponse = await fetch("http://miniserver:8080/territory-battles");
+            const tbReponse = await fetch("http://localhost:8080/territory-battles");
             const tbs = await tbReponse.json();
 
-            const memberResponse = await fetch("http://miniserver:8080/guilds/" + guild.guildId + "/players");
+            const memberResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
             const members = await memberResponse.json();
 
-            const guildUnitResponse = await fetch("http://miniserver:8080/guilds/" + guild.guildId + "/platoons");
+            const guildUnitResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/platoons");
             const guildUnits = await guildUnitResponse.json();
 
             const foo = await Promise.all(tbs.flatMap(async (tb) => {
-                const response = await fetch("http://miniserver:8080/territory-battles/" + tb.id + "/platoons");
+                const response = await fetch("http://localhost:8080/territory-battles/" + tb.id + "/platoons");
                 const platons = await response.json();
 
                 return {
@@ -50,45 +48,71 @@ function getGuildUnitQuantity(baseId, rarity, relicTier) {
 ---
 
 <Layout>
-    <div class="container">
-        <h1>{guild.name}</h1>
+    <nav class="bg-gray-50 dark:bg-gray-700">
+        <div class="max-w-screen-xl px-4 py-3 mx-auto">
+            <div class="flex items-center">
+                <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
+                    <li>
+                        <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline">Overview</a>
+                    </li>
+                    <li>
+                        <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Territor Battles</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto pt-5 lg:pt-20">
+        <h1 class="mb-4 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white">{guild.name}</h1>
 
-        <nav aria-label="breadcrumbs">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href={"/guild/" + guild.guildId}>Overview</a></li>
-                <li class="breadcrumb-item"><a href={"/guild/" + guild.guildId + "/tb//rise-of-the-empire"}>Territory Battle</a></li>
-            </ol>
-        </nav>
+        <h2 class="text-3xl md:text-3xl lg:text-5xl font-extrabold dark:text-white">{tb.name}</h2>
+        <h3 class="text-2xl md:text-3xl lg:text-4xl font-bold dark:text-white">Platons</h3>
 
-        <h2>{tb.name}</h2>
+        <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" role="tablist">
+                {platons.phases.map((phase) => (
+                    <li class="me-2" role="presentation">
+                    <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id={"tab-phase"+phase.phase} data-tabs-target={"#phase"+phase.phase} type="button" role="tab" aria-controls="profile">Phase {phase.phase}</button>
+                </li>
+                ))}
+            </ul>
+        </div>
 
-        <h3>Platoons</h3>
+        <div id="default-tab-content">
         {platons.phases.map((phase) => (
-            <div>
-                <h4>Phase {phase.phase}</h4>
-                <table class="table">
-                    <thead>
+            <div class="hidden bg-gray-50 dark:bg-gray-800 relative overflow-x-auto" id={"phase"+phase.phase} role="tabpanel" aria-labelledby={"phase"+phase.phase+"-tab"}>
+                <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+				    <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
-                            <th>Unit</th>
-                            <th>Rarity</th>
-                            <th>Relic</th>
-                            <th>Quantity</th>
-                            <th>Available in Guild</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Unit</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Rarity</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Relic</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Quantity</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Available in Guild</th>
                         </tr>
                     </thead>
                     <tbody>
                         {phase.platoons.map((platoon) => (
-                            <tr>
-                                <td>{platoon.unitName}</td>
-                                <td>{platoon.rarity}</td>
-                                <td>{platoon.relicTier}</td>
-                                <td>{platoon.quantity}</td>
-                                <td>{getGuildUnitQuantity(platoon.unitId, platoon.rarity, platoon.relicTier)}</td>
+                            <tr class={
+                                getGuildUnitQuantity(platoon.unitId, platoon.rarity, platoon.relicTier) < platoon.quantity ? 
+                                    "bg-red-500 dark:bg-red-800" : 
+                                getGuildUnitQuantity(platoon.unitId, platoon.rarity, platoon.relicTier) == platoon.quantity ? 
+                                    "bg-yellow-400 dark:bg-yellow-600" : 
+                                    "odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800"
+                            }>
+                                <th scope="row" class="p-1 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {platoon.unitName}
+                                </th>
+                                <td class="p-1 lg:px-6 lg:py-4">{platoon.rarity}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{platoon.relicTier}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{platoon.quantity}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{getGuildUnitQuantity(platoon.unitId, platoon.rarity, platoon.relicTier)}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
         ))}
-    </div>
+        </div>
+    </main>
 </Layout>

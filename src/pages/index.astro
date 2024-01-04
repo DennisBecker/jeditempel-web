@@ -1,41 +1,40 @@
 ---
-import "agnostic-css/src/components/table/table.css";
-
 import Layout from '../layouts/Layout.astro';
 
-const response = await fetch('http://miniserver:8080/guilds');
+const response = await fetch('http://localhost:8080/guilds');
 const guilds = await response.json();
 ---
 
 <Layout>
-	<div class="container">
-		<h1>Gilden der Allianz</h1>
-		<p>Updated at {new Intl.DateTimeFormat('en-GB', {
+	<main class="container mx-auto pt-5 lg:pt-20">
+		<h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Gilden der Allianz</h1>
+		<p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400">Updated at {new Intl.DateTimeFormat('en-GB', {
 			dateStyle: 'short',
 			timeStyle: 'short',
 			timeZone: 'Europe/Berlin',
 		  }).format()}</p>
-		<table class="table">
-		 	<thead>
-		 		<tr>
-		 			<th>Name</th>
-					<th>Galactic Power</th>
-		 			<th>Members</th>
-		 		</tr>
-		 	</thead>
-		 	<tbody>
-				{guilds.map(guild => (
-					<tr>
-						<td><a href={"/guild/" + guild.guildId}>{guild.name}</a></td>
-						<td>{guild.guildGalacticPower.toLocaleString()}</td>
-						<td>{guild.memberCount}</td>
-					</tr>
-				))}
-		 	</tbody>
-		</table>
-	</div>
-</Layout>
 
-<style>
-	
-</style>
+		<div class="relative overflow-x-auto lg:pt-20">
+			<table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+				<thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+					<tr>
+						<th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 ">Name</th>
+						<th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Galactic Power</th>
+						<th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Members</th>
+					</tr>
+				</thead>
+				<tbody>
+					{guilds.map(guild => (
+						<tr>
+							<th scope="row" class="px-3 py-3 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+								<a href={"/guild/" + guild.guildId}>{guild.name}</a>
+							</th>
+							<td class="px-3 py-3 lg:px-6 lg:py-4">{guild.guildGalacticPower.toLocaleString()}</td>
+							<td class="px-3 py-3 lg:px-6 lg:py-4">{guild.memberCount}</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+	</main>
+</Layout>
