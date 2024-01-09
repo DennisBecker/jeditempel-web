@@ -1,10 +1,13 @@
 ---
-import Layout from "../../../../layouts/Layout.astro";
-import createSlug from "../../../../lib/createSlug";
+import Layout from "@/layouts/Layout.astro";
+import createSlug from "@/lib/createSlug";
 
 export async function getStaticPaths() {
     const response = await fetch("http://localhost:8080/guilds");
     const guilds = await response.json();
+
+    const unitResponse = await fetch("http://localhost:8080/units");
+    const units = await unitResponse.json();
 
     const params = await Promise.all(
         guilds.map(async (guild) => {
@@ -18,13 +21,32 @@ export async function getStaticPaths() {
             const guildUnits = await guildUnitResponse.json();
 
             const foo = await Promise.all(tbs.flatMap(async (tb) => {
-                const response = await fetch("http://localhost:8080/territory-battles/" + tb.id + "/platoons");
-                const platons = await response.json();
+                const response = await fetch("http://localhost:8080/territory-battles/" + tb.id + "/operations");
+                const operations = await response.json();
+
+                // operations within each phase with same unitBaseId should only be added once with a counter for the quantity
+                console.log("test");
+                const groupedOperations = {"phases": []};
+                operations.phases.forEach(phase => {
+                    groupedOperations.phases.push({"phase": phase.phase, "operations": []});
+                    
+                    phase.operations.forEach(operation => {
+                        const existingOperation = groupedOperations.phases.find((p) => p.phase === phase.phase).operations.find((o) => o.unitId === operation.unitId);
+                        if (existingOperation) {
+                            existingOperation.quantity += 1
+                        } else {
+                            operation.quantity = 1;
+                            groupedOperations.phases.find((p) => p.phase === phase.phase).operations.push(operation);
+                        }
+                    });
+                });
+
+                //console.log(groupedOperations.phases[0].operations[0]);
 
                 return {
                     path: `/guilds/{guildId}/tb/{tbId}`,
                     params: { guildId: guild.guildId, tbId: createSlug(tb.name) },
-                    props: { guild, members, tb, platons, guildUnits }
+                    props: { guild, units, members, tb, operations: groupedOperations, guildUnits }
                 };
             }));
 
@@ -37,14 +59,21 @@ export async function getStaticPaths() {
     return params;
 }
 
-const { guild, members, tb, platons, guildUnits } = Astro.props;
+const { guild, units, members, tb, operations, guildUnits } = Astro.props;
 
 function getGuildUnitQuantity(baseId, rarity, relicTier) {
-        return guildUnits.filter((unit) => 
-            unit.combatType === 1 
-            ? baseId === unit.baseId && rarity == unit.currentRarity && unit.currentRelicTier >= relicTier 
-            : baseId === unit.baseId && rarity == unit.currentRarity).length
-    }
+    return guildUnits.filter((unit) => 
+        unit.combatType === 1 
+        ? baseId === unit.baseId && rarity == unit.currentRarity && unit.currentRelicTier >= relicTier 
+        : baseId === unit.baseId && rarity == unit.currentRarity).length
+}
+
+function getRequirement(baseId, rarity, relicTier) {
+    return units.filter((unit) => baseId === unit.baseId)
+    .map((unit) => {
+        return unit.combatType === 1 ? "R" + relicTier : rarity + "*";
+    })
+}
 ---
 
 <Layout>
@@ -54,6 +83,9 @@ function getGuildUnitQuantity(baseId, rarity, relicTier) {
                 <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
                     <li>
                         <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline">Guild Overview</a>
+                    </li>
+                    <li>
+                        <a href={"/guild/" + guild.guildId + "/farming"} class="text-gray-900 dark:text-white hover:underline">Farming</a>
                     </li>
                     <li>
                         <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Territor Battles</a>
@@ -70,7 +102,7 @@ function getGuildUnitQuantity(baseId, rarity, relicTier) {
 
         <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
             <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" role="tablist">
-                {platons.phases.map((phase) => (
+                {operations.phases.map((phase) => (
                     <li class="me-2" role="presentation">
                     <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id={"tab-phase"+phase.phase} data-tabs-target={"#phase"+phase.phase} type="button" role="tab" aria-controls="profile">Phase {phase.phase}</button>
                 </li>
@@ -79,34 +111,32 @@ function getGuildUnitQuantity(baseId, rarity, relicTier) {
         </div>
 
         <div id="default-tab-content">
-        {platons.phases.map((phase) => (
+        {operations.phases.map((phase) => (
             <div class="hidden bg-gray-50 dark:bg-gray-800 relative overflow-x-auto" id={"phase"+phase.phase} role="tabpanel" aria-labelledby={"phase"+phase.phase+"-tab"}>
                 <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
 				    <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
                             <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Unit</th>
-                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Rarity</th>
-                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Relic</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Requirement</th>
                             <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Quantity</th>
                             <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Available in Guild</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {phase.platoons.map((platoon) => (
+                        {phase.operations.map((operation) => (
                             <tr class={
-                                getGuildUnitQuantity(platoon.unitId, platoon.rarity, platoon.relicTier) < platoon.quantity ? 
+                                getGuildUnitQuantity(operation.unitId, operation.rarity, operation.requiredRelicTier) < operation.quantity ? 
                                     "bg-red-500 dark:bg-red-800" : 
-                                getGuildUnitQuantity(platoon.unitId, platoon.rarity, platoon.relicTier) == platoon.quantity ? 
+                                getGuildUnitQuantity(operation.unitId, operation.rarity, operation.requiredRelicTier) == operation.quantity ? 
                                     "bg-yellow-400 dark:bg-yellow-600" : 
                                     ""
                             }>
                                 <th scope="row" class="p-1 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {platoon.unitName}
+                                    {operation.unitName}
                                 </th>
-                                <td class="p-1 lg:px-6 lg:py-4">{platoon.rarity}</td>
-                                <td class="p-1 lg:px-6 lg:py-4">{platoon.relicTier}</td>
-                                <td class="p-1 lg:px-6 lg:py-4">{platoon.quantity}</td>
-                                <td class="p-1 lg:px-6 lg:py-4">{getGuildUnitQuantity(platoon.unitId, platoon.rarity, platoon.relicTier)}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{getRequirement(operation.unitId, operation.rarity, operation.requiredRelicTier)}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{operation.quantity}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{getGuildUnitQuantity(operation.unitId, operation.rarity, operation.requiredRelicTier)}</td>
                             </tr>
                         ))}
                     </tbody>

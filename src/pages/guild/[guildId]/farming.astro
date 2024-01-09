@@ -1,0 +1,174 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import createSlug from "@/lib/createSlug";
+
+export async function getStaticPaths() {
+    const response = await fetch("http://localhost:8080/guilds");
+    const guilds = await response.json();
+
+    const unitResponse = await fetch("http://localhost:8080/units");
+    const units = await unitResponse.json();
+
+    const params = await Promise.all(
+
+        guilds.map(async (guild) => {
+            const memberResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
+            const members = await memberResponse.json();
+
+            const guildUnitResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/platoons");
+            const guildUnits = await guildUnitResponse.json();
+
+            return {
+                    path: `/guilds/{guildId}/farming`,
+                    params: { guildId: guild.guildId },
+                    props: { guild, units, members, guildUnits }
+                };
+        })
+    );
+
+    return params;
+}
+
+const { guild, units, members, guildUnits } = Astro.props;
+
+function getMembersWithCharacter(unitId, rarity, requiresTier, requiredRelic) {
+    return members.filter((member) => {
+        return findUnitFromGuildUnits(member.playerId, unitId).filter((unit) => {
+            return unit.rarity === rarity && unit.relicTier >= requiredRelic;
+        });
+    }).map((member) => {
+        return member.name;
+    });
+}
+
+function findUnitFromGuildUnits(playerId, unitId) {
+    const unit2 = guildUnits.find((unit) => {
+        return unit.playerId === playerId && unit.baseId === unitId;
+    }) || {
+        playerId: playerId,
+        baseId: unitId,
+        currentRarity: 0,
+        currentLevel: 0,
+        currentTier: 0,
+        currentRelicTier: 0,
+        combatType: 1,
+        legend: false,
+        updatedAt: '2024-01-01'
+    };
+
+    return unit2;
+}
+
+function fullfillsRequirement(playerId, unit, requiredTier) {
+    if (unit.currentTier < requiredTier) {
+        return "p-1 lg:px-6 lg:py-4 bg-red-100 dark:bg-red-700";
+    } else if (unit.currentTier >= requiredTier) {
+        return "p-1 lg:px-6 lg:py-4 bg-green-100 dark:bg-green-700";
+    } else {
+        return "p-1 lg:px-6 lg:py-4";
+    }
+
+}
+
+
+//const membersWithJKCK = getMembersWithCharacter("JEDIKNIGHTCAL", 7, 13, 7)
+---
+<Layout>
+    <nav class="bg-gray-50 dark:bg-gray-700">
+        <div class="max-w-screen-xl px-4 py-3 mx-auto">
+            <div class="flex items-center">
+                <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
+                    <li>
+                        <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline">Guild Overview</a>
+                    </li>
+                    <li>
+                        <a href={"/guild/" + guild.guildId + "/farming"} class="text-gray-900 dark:text-white hover:underline">Farming</a>
+                    </li>
+                    <li>
+                        <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Territor Battles</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto pt-5 lg:pt-20">
+        <h1 class="mb-4 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white">{guild.name}</h1>
+
+        <h3 class="text-2xl md:text-3xl lg:text-4xl font-bold dark:text-white">Farming</h3>
+        
+        <div class="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+            <div class="flex-row items-center justify-between p-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
+                <div>
+                <h5 class="mr-3 font-semibold dark:text-white">Jedi Knigth Cal Kestis</h5>
+                <p class="text-gray-500 dark:text-gray-400">Mandatory character for RoTE special planet Zeffo</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-800 relative overflow-x-auto">
+            <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Member</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Jedi Knight Cal Kestis</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Cal Kestis</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Cere Junda</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Merrin</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Tarfful</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Saw Gerrera</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {members.map((member) => (
+                        <tr>
+                            <th scope="row" class="p-1 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                {member.name}
+                            </th>
+                            {() => {
+                                const unit = findUnitFromGuildUnits(member.playerId, "JEDIKNIGHTCAL");
+                                return (
+                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentTier}</td>
+                                );
+
+                            }}
+                            {() => {
+                                const unit = findUnitFromGuildUnits(member.playerId, "CALKESTIS");
+                                return (
+                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentTier}</td>
+                                );
+
+                            }}
+                            {() => {
+                                const unit = findUnitFromGuildUnits(member.playerId, "CEREJUNDA");
+                                return (
+                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentTier}</td>
+                                );
+
+                            }}
+                            {() => {
+                                const unit = findUnitFromGuildUnits(member.playerId, "MERRIN");
+                                return (
+                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentTier}</td>
+                                );
+
+                            }}
+                            {() => {
+                                const unit = findUnitFromGuildUnits(member.playerId, "TARFFUL");
+                                return (
+                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentTier}</td>
+                                );
+
+                            }}
+                            {() => {
+                                const unit = findUnitFromGuildUnits(member.playerId, "SAWGERRERA");
+                                return (
+                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentTier}</td>
+                                );
+
+                            }}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</Layout>

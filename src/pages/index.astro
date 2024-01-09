@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '@/layouts/Layout.astro';
 
 const response = await fetch('http://localhost:8080/guilds');
 const guilds = await response.json();

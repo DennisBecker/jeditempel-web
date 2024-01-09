@@ -1,5 +1,5 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import Layout from "@/layouts/Layout.astro";
 
 export async function getStaticPaths() {
     const response = await fetch("http://localhost:8080/guilds");
@@ -28,6 +28,9 @@ const { guild, members } = Astro.props;
                 <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
                     <li>
                         <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Guild Overview</a>
+                    </li>
+                    <li>
+                        <a href={"/guild/" + guild.guildId + "/farming"} class="text-gray-900 dark:text-white hover:underline">Farming</a>
                     </li>
                     <li>
                         <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="text-gray-900 dark:text-white hover:underline">Territor Battles</a>
