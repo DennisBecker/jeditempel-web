@@ -2,12 +2,6 @@ version: 26
 jobs:
 - name: Mirror GitHub
   steps:
-  - !PushRepository
-    name: push
-    remoteUrl: https://github.com/DennisBecker/jeditempel-web
-    passwordSecret: access-token
-    force: false
-    condition: ALWAYS
   - !PullRepository
     name: pull
     remoteUrl: https://github.com/DennisBecker/jeditempel-web
@@ -15,6 +9,12 @@ jobs:
     passwordSecret: access-token
     refs: refs/heads/* refs/tags/*
     withLfs: false
+    force: false
+    condition: ALWAYS
+  - !PushRepository
+    name: push
+    remoteUrl: https://github.com/DennisBecker/jeditempel-web
+    passwordSecret: access-token
     force: false
     condition: ALWAYS
   triggers:
