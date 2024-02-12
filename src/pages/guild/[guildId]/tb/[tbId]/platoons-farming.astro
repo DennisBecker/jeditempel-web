@@ -51,36 +51,38 @@ function getRequirement(rarity, relicTier) {
         <div id="default-tab-content">
         {operations.operationGroupPhases.map((phase) => (
             <h4 class="mb-2 mt-2 text-xl md:text-2xl lg:text-3xl font-bold dark:text-white">Phase {phase.phase} - Requires Relic {phase.phase + 4}</h4>
-            <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Unit</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Alignment</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Sector</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Operation</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Needed</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Available in Guild</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Players Farming</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {phase.operationGroups.map((operation) => (
-                        <tr class={
-                            operation.needed > operation.available ? "bg-red-500 dark:bg-red-800 text-white dark:text-white" : ""
-                        }>
-                            <th scope="row" class="p-1 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {operation.unitName}
-                            </th>
-                            <td class="p-1 lg:px-6 lg:py-4">{operation.alignement}</td>
-                            <td class="p-1 lg:px-6 lg:py-4">{operation.sector}</td>
-                            <td class="p-1 lg:px-6 lg:py-4">{operation.operations}</td>
-                            <td class="p-1 lg:px-6 lg:py-4">{operation.needed}</td>
-                            <td class="p-1 lg:px-6 lg:py-4">{operation.available}</td>
-                            <td class="p-1 lg:px-6 lg:py-4">{operation.players.join(", ")}</td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Unit</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Alignment</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Sector</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Operation</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Needed</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Available in Guild</th>
+                            <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Players Farming</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {phase.operationGroups.map((operation) => (
+                            <tr class={
+                                operation.needed > operation.available ? "bg-red-500 dark:bg-red-800 text-white dark:text-white" : ""
+                            }>
+                                <th scope="row" class="p-1 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {operation.unitName}
+                                </th>
+                                <td class="p-1 lg:px-6 lg:py-4">{operation.alignement}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{operation.sector}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{operation.operations}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{operation.needed}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{operation.available}</td>
+                                <td class="p-1 lg:px-6 lg:py-4">{operation.players.join(", ")}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         ))}
         </div>
     </main>
