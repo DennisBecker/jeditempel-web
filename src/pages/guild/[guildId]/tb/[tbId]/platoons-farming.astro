@@ -51,15 +51,15 @@ function getRequirement(rarity, relicTier) {
         <div id="default-tab-content">
         {operations.operationGroupPhases.map((phase) => (
             <h4 class="mb-2 mt-2 text-xl md:text-2xl lg:text-3xl font-bold dark:text-white">Phase {phase.phase} - Requires Relic {phase.phase + 4}</h4>
-            <table class="table-fixed w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 w-max">Unit</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 w-36">Alignment</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 w-36">Sector</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 w-36">Operation</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 w-36">Needed</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 w-fit">Available in Guild</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 w-fit">Unit</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Alignment</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Sector</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Operation</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Needed</th>
+                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Available in Guild</th>
                         <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3 w-fit">Players Farming</th>
                     </tr>
                 </thead>
