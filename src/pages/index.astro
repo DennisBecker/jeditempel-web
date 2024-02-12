@@ -1,8 +1,8 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import { getGuilds } from '@/lib/apiClient';
 
-const response = await fetch('http://localhost:8080/guilds');
-const guilds = await response.json();
+const guilds = await getGuilds();
 ---
 
 <Layout>

@@ -1,0 +1,24 @@
+---
+const { guildId } = Astro.props;
+const path = Astro.url.pathname;
+---
+<nav class="bg-gray-50 dark:bg-gray-700">
+    <div class="max-w-screen-xl px-4 py-3 mx-auto">
+        <div class="flex items-center">
+            <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
+                <li>
+                    <a href={"/guild/" + guildId} class:list={['text-gray-900', 'dark:text-white', 'hover:underline', {'underline': "/guild/" + guildId === path}]}>Guild Overview</a>
+                </li>
+                <li>
+                    <a href={"/guild/" + guildId + "/farming"} class:list={['text-gray-900', 'dark:text-white', 'hover:underline', {'underline': "/guild/" + guildId + "/farming" === path}]}>Farming</a>
+                </li>
+                <li>
+                    <a href={"/guild/" + guildId + "/tb/rise-of-the-empire/platoons-phase"} class:list={['text-gray-900', 'dark:text-white', 'hover:underline', {'underline': "/guild/" + guildId + "/tb/rise-of-the-empire/platoons-phase" === path}]}>Ops by Phase</a>
+                </li>
+                <li>
+                    <a href={"/guild/" + guildId + "/tb/rise-of-the-empire/platoons-farming"} class:list={['text-gray-900', 'dark:text-white', 'hover:underline', {'underline': "/guild/" + guildId + "/tb/rise-of-the-empire/platoons-farming" === path}]}>Ops Farming</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

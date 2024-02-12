@@ -1,22 +1,17 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import createSlug from "@/lib/createSlug";
+import SubNavigation from "@/components/SubNavigation.astro";
+import { getGuilds, getUnits, getGuildPlayers, getGuildPlatoons } from "@/lib/apiClient";
 
 export async function getStaticPaths() {
-    const response = await fetch("http://localhost:8080/guilds");
-    const guilds = await response.json();
-
-    const unitResponse = await fetch("http://localhost:8080/units");
-    const units = await unitResponse.json();
+    const guilds = await getGuilds();
+    const units = await getUnits();
 
     const params = await Promise.all(
 
         guilds.map(async (guild) => {
-            const memberResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
-            const members = await memberResponse.json();
-
-            const guildUnitResponse = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/platoons");
-            const guildUnits = await guildUnitResponse.json();
+            const members = await getGuildPlayers(guild.guildId);
+            const guildUnits = await getGuildPlatoons(guild.guildId);
 
             return {
                     path: `/guilds/{guildId}/farming`,
@@ -61,9 +56,9 @@ function findUnitFromGuildUnits(playerId, unitId) {
 
 function fullfillsRequirement(playerId, unit, requiredTier) {
     if (unit.currentTier < requiredTier) {
-        return "p-1 lg:px-6 lg:py-4 bg-red-100 dark:bg-red-700";
+        return "p-1 lg:px-6 lg:py-4 bg-red-100 dark:bg-red-700 text-white dark:text-white";
     } else if (unit.currentTier >= requiredTier) {
-        return "p-1 lg:px-6 lg:py-4 bg-green-100 dark:bg-green-700";
+        return "p-1 lg:px-6 lg:py-4 bg-green-100 dark:bg-green-700 text-white dark:text-white";
     } else {
         return "p-1 lg:px-6 lg:py-4";
     }
@@ -74,23 +69,7 @@ function fullfillsRequirement(playerId, unit, requiredTier) {
 //const membersWithJKCK = getMembersWithCharacter("JEDIKNIGHTCAL", 7, 13, 7)
 ---
 <Layout>
-    <nav class="bg-gray-50 dark:bg-gray-700">
-        <div class="max-w-screen-xl px-4 py-3 mx-auto">
-            <div class="flex items-center">
-                <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
-                    <li>
-                        <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline">Guild Overview</a>
-                    </li>
-                    <li>
-                        <a href={"/guild/" + guild.guildId + "/farming"} class="text-gray-900 dark:text-white hover:underline">Farming</a>
-                    </li>
-                    <li>
-                        <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Territor Battles</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <SubNavigation guildId={guild.guildId} />
     <main class="container mx-auto pt-5 lg:pt-20">
         <h1 class="mb-4 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white">{guild.name}</h1>
 

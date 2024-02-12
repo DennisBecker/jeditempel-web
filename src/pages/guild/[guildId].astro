@@ -1,14 +1,14 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import SubNavigation from "@/components/SubNavigation.astro";
+import { getGuilds, getGuildPlayers } from '@/lib/apiClient';
 
 export async function getStaticPaths() {
-    const response = await fetch("http://localhost:8080/guilds");
-    const guilds = await response.json();
+    const guilds = await getGuilds();
 
     return await Promise.all(
         guilds.map(async (guild) => {
-            const response = await fetch("http://localhost:8080/guilds/" + guild.guildId + "/players");
-            const members = await response.json();
+            const members = await getGuildPlayers(guild.guildId);
 
             return {
                 params: { guildId: guild.guildId },
@@ -22,23 +22,7 @@ const { guild, members } = Astro.props;
 ---
 
 <Layout>
-    <nav class="bg-gray-50 dark:bg-gray-700">
-        <div class="max-w-screen-xl px-4 py-3 mx-auto">
-            <div class="flex items-center">
-                <ul class="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
-                    <li>
-                        <a href={"/guild/" + guild.guildId} class="text-gray-900 dark:text-white hover:underline" aria-current="page">Guild Overview</a>
-                    </li>
-                    <li>
-                        <a href={"/guild/" + guild.guildId + "/farming"} class="text-gray-900 dark:text-white hover:underline">Farming</a>
-                    </li>
-                    <li>
-                        <a href={"/guild/" + guild.guildId + "/tb/rise-of-the-empire"} class="text-gray-900 dark:text-white hover:underline">Territor Battles</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <SubNavigation guildId={guild.guildId} />
     <main class="container mx-auto pt-5 lg:pt-20">
         <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">{guild.name}</h1>
 
