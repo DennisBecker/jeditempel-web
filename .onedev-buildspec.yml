@@ -49,9 +49,6 @@ jobs:
     branches: main
     paths: src/
     projects: DennisBecker/jeditempel-web
-  - !ScheduleTrigger
-    cronExpression: 0 0 7,19 * * ?
-    projects: DennisBecker/jeditempel-web
   retryCondition: never
   maxRetries: 3
   retryDelay: 30
