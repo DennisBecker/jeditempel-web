@@ -41,7 +41,7 @@ jobs:
 
         npm run build
 
-        netlify deploy --prod
+        node_modules/.bin/netlify deploy --prod --auth @secret:netlify-token@ --site jeditempel
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
