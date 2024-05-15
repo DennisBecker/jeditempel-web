@@ -1,11 +1,10 @@
-version: 26
+version: 33
 jobs:
 - name: Mirror GitHub
   steps:
   - !PullRepository
     name: pull
     remoteUrl: https://github.com/DennisBecker/jeditempel-web
-    syncToChildProject: false
     passwordSecret: access-token
     refs: refs/heads/* refs/tags/*
     withLfs: false
@@ -34,14 +33,15 @@ jobs:
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CommandStep
     name: build and deploy
-    runInContainer: false
+    runInContainer: true
+    image: node:current-alpine
     interpreter: !DefaultInterpreter
-      commands:
-      - npm install
-      - ''
-      - npm run build
-      - ''
-      - netlify deploy --prod
+      commands: |
+        npm install
+
+        npm run build
+
+        netlify deploy --prod
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
