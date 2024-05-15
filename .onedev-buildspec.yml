@@ -39,7 +39,7 @@ jobs:
       commands: |
         npm install
 
-        npm run build
+         PUBLIC_BASE_URL=@secret:api_base_url@ npm run build
 
         node_modules/.bin/netlify deploy --prod --auth @secret:netlify-token@ --site jeditempel
     useTTY: false
