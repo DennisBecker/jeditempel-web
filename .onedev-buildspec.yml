@@ -44,11 +44,25 @@ jobs:
         node_modules/.bin/netlify deploy --prod --auth @secret:netlify-token@ --site jeditempel
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  paramSpecs:
+  - !TextParam
+    name: Optional
+    description: force trigger new build
+    allowEmpty: false
+    multiline: false
+    defaultValueProvider: !SpecifiedDefaultValue
+      value: optional
   triggers:
   - !BranchUpdateTrigger
     branches: main
-    paths: src/
+    paths: src/**
     projects: DennisBecker/jeditempel-web
+    paramMatrix:
+    - valuesProvider: !SpecifiedValues
+        values:
+        - - optional
+      secret: false
+      name: Optional
   retryCondition: never
   maxRetries: 3
   retryDelay: 30
