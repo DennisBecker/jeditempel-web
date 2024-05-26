@@ -46,23 +46,23 @@ jobs:
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   paramSpecs:
   - !TextParam
-    name: Optional
+    name: timestamp
     description: force trigger new build
     allowEmpty: false
     multiline: false
     defaultValueProvider: !SpecifiedDefaultValue
-      value: optional
+      value: '1'
   triggers:
   - !BranchUpdateTrigger
     branches: main
     paths: src/**
     projects: DennisBecker/jeditempel-web
     paramMatrix:
-    - valuesProvider: !SpecifiedValues
+    - secret: false
+      valuesProvider: !SpecifiedValues
         values:
-        - - optional
-      secret: false
-      name: Optional
+        - - '1'
+      name: timestamp
   retryCondition: never
   maxRetries: 3
   retryDelay: 30
