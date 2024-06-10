@@ -66,7 +66,7 @@ function getRequirement(rarity, relicTier) {
                     <tbody>
                         {phase.operationGroups.map((operation) => (
                             <tr class={
-                                operation.needed > operation.available ? "bg-red-500 dark:bg-red-800 text-white dark:text-white" : ""
+                                operation.needed > operation.available ? "bg-red-500 dark:bg-red-800 text-white dark:text-white" : operation.needed === operation.available ? "bg-yellow-400 dark:bg-yellow-600 text-white dark:text-white" : ""
                             }>
                                 <th scope="row" class="p-1 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {operation.unitName}
