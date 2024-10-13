@@ -41,7 +41,7 @@ jobs:
 
          PUBLIC_BASE_URL=@property:api-base-url@ npm run build
 
-        node_modules/.bin/netlify deploy --prod --auth @secret:netlify-token@ --site jeditempel
+        node_modules/.bin/netlify deploy --prod --auth @secret:netlify-token@ --site batallion
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   paramSpecs:
