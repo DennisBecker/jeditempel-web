@@ -1,4 +1,4 @@
-version: 38
+version: 39
 jobs:
 - name: Mirror GitHub
   steps:
@@ -30,12 +30,12 @@ jobs:
     cloneCredential: !DefaultCredential {}
     withLfs: false
     withSubmodules: false
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    condition: ALWAYS
   - !GenerateChecksumStep
     name: generate package checksum
     files: package-lock.json
     targetFile: checksum
-    condition: NEVER
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !SetupCacheStep
     name: set up npm cache
     key: node_modules_@file:checksum@
@@ -44,7 +44,7 @@ jobs:
     paths:
     - node_modules
     uploadStrategy: UPLOAD_IF_NOT_HIT
-    condition: NEVER
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CommandStep
     name: build astro page
     runInContainer: true
@@ -57,7 +57,7 @@ jobs:
 
         node_modules/.bin/netlify deploy --no-build --prod --auth @secret:netlify-token@ --site batallion --dir dist
     useTTY: false
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    condition: ALWAYS
   paramSpecs:
   - !TextParam
     name: timestamp
