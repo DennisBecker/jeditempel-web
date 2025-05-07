@@ -1,4 +1,4 @@
-version: 33
+version: 38
 jobs:
 - name: Mirror GitHub
   steps:
@@ -31,18 +31,39 @@ jobs:
     withLfs: false
     withSubmodules: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !GenerateChecksumStep
+    name: generate package checksum
+    files: package-lock.json
+    targetFile: checksum
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !SetupCacheStep
+    name: set up npm cache
+    key: node_modules_@file:checksum@
+    loadKeys:
+    - node_modules
+    paths:
+    - node_modules
+    uploadStrategy: UPLOAD_IF_NOT_HIT
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CommandStep
-    name: build and deploy
+    name: build astro page
     runInContainer: true
     image: node:current-alpine
     interpreter: !DefaultInterpreter
       commands: |
-        npm install
+        npm ci
 
-         PUBLIC_BASE_URL=@property:api-base-url@ npm run build
-
-        node_modules/.bin/netlify deploy --prod --auth @secret:netlify-token@ --site batallion
+        PUBLIC_BASE_URL=@property:api-base-url@ npm run build
     useTTY: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: deploy to netlify
+    runInContainer: true
+    image: node:current-alpine
+    interpreter: !DefaultInterpreter
+      commands: |
+        node_modules/.bin/netlify deploy --prod --auth @secret:netlify-token@ --site batallion
+    useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   paramSpecs:
   - !TextParam
