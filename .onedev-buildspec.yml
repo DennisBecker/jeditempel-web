@@ -64,7 +64,7 @@ jobs:
       commands: |
         node_modules/.bin/netlify deploy --no-build --prod --auth @secret:netlify-token@ --site batallion --dir dist
     useTTY: true
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    condition: ALWAYS
   paramSpecs:
   - !TextParam
     name: timestamp
