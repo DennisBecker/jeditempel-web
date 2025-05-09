@@ -54,10 +54,17 @@ jobs:
         npm ci
 
         PUBLIC_BASE_URL=@property:api-base-url@ npm run build
-
-        node_modules/.bin/netlify deploy --no-build --prod --auth @secret:netlify-token@ --site batallion --dir dist
     useTTY: false
     condition: ALWAYS
+  - !CommandStep
+    name: deploy to netlify
+    runInContainer: true
+    image: node:current-alpine
+    interpreter: !DefaultInterpreter
+      commands: |
+        node_modules/.bin/netlify deploy --no-build --prod --auth @secret:netlify-token@ --site batallion --dir dist
+    useTTY: true
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   paramSpecs:
   - !TextParam
     name: timestamp
