@@ -77,18 +77,27 @@ function getRequirement(baseId, rarity, relicTier) {
         <h3 class="text-2xl md:text-3xl lg:text-4xl font-bold dark:text-white">Platoons</h3>
 
         <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" role="tablist">
-                {operations.phases.map((phase) => (
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" role="tablist">
+                {operations.phases.map((phase, index) => (
                     <li class="me-2" role="presentation">
-                    <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id={"tab-phase"+phase.phase} data-tabs-target={"#phase"+phase.phase} type="button" role="tab" aria-controls="profile">Phase {phase.phase}</button>
-                </li>
+                        <button 
+                            class={`tab-button inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${index === 0 ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent'}`}
+                            id={`tab-phase${phase.phase}`} 
+                            data-phase={`phase${phase.phase}`}
+                            type="button" 
+                            role="tab" 
+                            aria-controls={`phase${phase.phase}`}
+                        >
+                            Phase {phase.phase}
+                        </button>
+                    </li>
                 ))}
             </ul>
         </div>
 
         <div id="default-tab-content">
-        {operations.phases.map((phase) => (
-            <div class="hidden bg-gray-50 dark:bg-gray-800 relative overflow-x-auto" id={"phase"+phase.phase} role="tabpanel" aria-labelledby={"phase"+phase.phase+"-tab"}>
+        {operations.phases.map((phase, index) => (
+            <div class={`bg-gray-50 dark:bg-gray-800 relative overflow-x-auto ${index !== 0 ? 'hidden' : ''}`} id={`phase${phase.phase}`} role="tabpanel" aria-labelledby={`phase${phase.phase}-tab`}>
                 <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
 				    <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
@@ -122,3 +131,44 @@ function getRequirement(baseId, rarity, relicTier) {
         </div>
     </main>
 </Layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function switchTab(event) {
+            event.preventDefault();
+            const targetPhase = event.target.getAttribute('data-phase');
+            
+            
+            // Hide all tab content
+            const allTabPanels = document.querySelectorAll('[role="tabpanel"]');
+            allTabPanels.forEach(panel => {
+                panel.classList.add('hidden');
+            });
+            
+            // Remove active state from all tabs
+            const allTabs = document.querySelectorAll('.tab-button');
+            allTabs.forEach(tab => {
+                tab.classList.remove('text-blue-600', 'border-blue-600', 'dark:text-blue-500', 'dark:border-blue-500');
+                tab.classList.add('border-transparent');
+            });
+            
+            // Show target tab content
+            const targetPanel = document.getElementById(targetPhase);
+            if (targetPanel) {
+                targetPanel.classList.remove('hidden');
+            } else {
+                console.error('Panel not found:', targetPhase);
+            }
+            
+            // Add active state to clicked tab
+            event.target.classList.add('text-blue-600', 'border-blue-600', 'dark:text-blue-500', 'dark:border-blue-500');
+            event.target.classList.remove('border-transparent');
+        }
+        
+        // Add event listeners to all tab buttons
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach((button, index) => {
+            button.addEventListener('click', switchTab);
+        });
+    });
+</script>

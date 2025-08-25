@@ -26,6 +26,98 @@ export async function getStaticPaths() {
 
 const { guild, units, members, guildUnits } = Astro.props;
 
+// Teams Definition - hier können Teams konfiguriert werden
+const teams = [
+    {
+        name: "RotE Special Mission for Zeffo",
+        description: "Mandatory characters for RoTE special mission on Bracca to unlock planet Zeffo",
+        characters: [
+            {
+                name: "Cere Junda",
+                baseId: "CEREJUNDA",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+            {
+                name: "Jedi Knight Cal Kestis", 
+                baseId: "JEDIKNIGHTCAL",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            }
+        ]
+    },
+    {
+        name: "RotE Special Mission for Third Sister",
+        description: "Characters for RotE special mission for Third Sister",
+        characters: [
+            {
+                name: "Grand Inquisitor",
+                baseId: "GRANDINQUISITOR",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+            {
+                name: "Seventh Sister",
+                baseId: "SEVENTHSISTER",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+            {
+                name: "Fifth Brother",
+                baseId: "FIFTHBROTHER",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+            {
+                name: "Eighth Brother",
+                baseId: "EIGHTHBROTHER",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+            {
+                name: "Nineth Sister",
+                baseId: "NINTHSISTER",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+        ]
+    },
+    {
+        name: "RotE Special Mission for Mandalore",
+        description: "Characters for RotE special mission on Tatooine to unlock planet Mandalore",
+        characters: [
+            {
+                name: "Bo-Katan (Mand'alor)",
+                baseId: "MANDALORBOKATAN",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+            {
+                name: "IG-12 & Grogu",
+                baseId: "IG12",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+            {
+                name: "The Mandalorian (Beskar Armor)",
+                baseId: "THEMANDALORIANBESKARARMOR",
+                requiredRarity: 7,
+                requiredTier: 13,
+                requiredRelicTier: 7
+            },
+        ]
+    }
+];
+
 function getMembersWithCharacter(unitId, rarity, requiresTier, requiredRelic) {
     return members.filter((member) => {
         return findUnitFromGuildUnits(member.playerId, unitId).filter((unit) => {
@@ -54,17 +146,69 @@ function findUnitFromGuildUnits(playerId, unitId) {
     return unit2;
 }
 
-function fullfillsRequirement(playerId, unit, requiredTier) {
-    if (unit.currentTier < requiredTier) {
-        return "p-1 lg:px-6 lg:py-4 bg-red-100 dark:bg-red-700 text-white dark:text-white";
-    } else if (unit.currentTier >= requiredTier) {
+function fullfillsRequirement(playerId, unit, character) {
+    const { requiredRarity, requiredTier, requiredRelicTier } = character;
+    
+    // Check all requirements
+    const meetsRarity = unit.currentRarity >= requiredRarity;
+    const meetsTier = unit.currentTier >= requiredTier;
+    const meetsRelic = unit.currentRelicTier >= requiredRelicTier;
+    
+    // If all requirements are met
+    if (meetsRarity && meetsTier && meetsRelic) {
         return "p-1 lg:px-6 lg:py-4 bg-green-100 dark:bg-green-700 text-white dark:text-white";
-    } else {
-        return "p-1 lg:px-6 lg:py-4";
     }
-
+    // If at least one requirement is not met
+    else {
+        return "p-1 lg:px-6 lg:py-4 bg-red-100 dark:bg-red-700 text-white dark:text-white";
+    }
 }
 
+function checkMemberMeetsAllRequirements(member, team) {
+    return team.characters.every(character => {
+        const unit = findUnitFromGuildUnits(member.playerId, character.baseId);
+        const { requiredRarity, requiredTier, requiredRelicTier } = character;
+        
+        return unit.currentRarity >= requiredRarity && 
+               unit.currentTier >= requiredTier && 
+               unit.currentRelicTier >= requiredRelicTier;
+    });
+}
+
+function getTeamCompletionStats(team) {
+    const membersWhoMeetRequirements = members.filter(member => 
+        checkMemberMeetsAllRequirements(member, team)
+    );
+    
+    return {
+        completed: membersWhoMeetRequirements.length,
+        total: members.length,
+        percentage: Math.round((membersWhoMeetRequirements.length / members.length) * 100)
+    };
+}
+
+// Pre-calculate team stats to avoid complex expressions in template
+const teamStats = teams.map(team => ({
+    ...team,
+    stats: getTeamCompletionStats(team)
+}));
+
+// Pre-calculate all member data for each team to avoid complex expressions in template
+const teamsWithMemberData = teamStats.map(team => ({
+    ...team,
+    memberRows: members.map(member => ({
+        name: member.name,
+        characters: team.characters.map(character => {
+            const unit = findUnitFromGuildUnits(member.playerId, character.baseId);
+            return {
+                name: character.name,
+                unit: unit,
+                cssClass: fullfillsRequirement(member.playerId, unit, character),
+                displayText: `${unit.currentRarity}* G${unit.currentTier} R${unit.currentRelicTier}`
+            };
+        })
+    }))
+}));
 
 //const membersWithJKCK = getMembersWithCharacter("JEDIKNIGHTCAL", 7, 13, 7)
 ---
@@ -75,79 +219,61 @@ function fullfillsRequirement(playerId, unit, requiredTier) {
 
         <h3 class="text-2xl md:text-3xl lg:text-4xl font-bold dark:text-white">Farming</h3>
         
-        <div class="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
-            <div class="flex-row items-center justify-between p-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
-                <div>
-                <h5 class="mr-3 font-semibold dark:text-white">Jedi Knigth Cal Kestis</h5>
-                <p class="text-gray-500 dark:text-gray-400">Mandatory character for RoTE special planet Zeffo</p>
+        {teamsWithMemberData.map((team) => (
+            <div class="mb-8">
+                <div class="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+                    <div class="flex-row items-center justify-between p-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h5 class="mr-3 font-semibold dark:text-white">{team.name}</h5>
+                                    <p class="text-gray-500 dark:text-gray-400">{team.description}</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold dark:text-white">
+                                        {team.stats.completed}/{team.stats.total}
+                                    </div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        {team.stats.percentage}% ready
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                                <div 
+                                    class="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                                    style={`width: ${team.stats.percentage}%`}
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-800 relative overflow-x-auto">
+                    <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Member</th>
+                                {team.characters.map((character) => (
+                                    <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">{character.name}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {team.memberRows.map((memberRow) => (
+                                <tr>
+                                    <th scope="row" class="p-1 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        {memberRow.name}
+                                    </th>
+                                    {memberRow.characters.map((characterData) => (
+                                        <td class={characterData.cssClass}>
+                                            {characterData.displayText}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
-        <div class="bg-gray-50 dark:bg-gray-800 relative overflow-x-auto">
-            <table class="w-full text-sm lg:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Member</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Jedi Knight Cal Kestis</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Cal Kestis</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Cere Junda</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Merrin</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Tarfful</th>
-                        <th scope="col" class="px-3 py-2 lg:px-6 lg:py-3">Saw Gerrera</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {members.map((member) => (
-                        <tr>
-                            <th scope="row" class="p-1 lg:px-6 lg:py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {member.name}
-                            </th>
-                            {() => {
-                                const unit = findUnitFromGuildUnits(member.playerId, "JEDIKNIGHTCAL");
-                                return (
-                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentRarity}* G{unit.currentTier} R{unit.currentRelicTier}</td>
-                                );
-
-                            }}
-                            {() => {
-                                const unit = findUnitFromGuildUnits(member.playerId, "CALKESTIS");
-                                return (
-                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentRarity}* G{unit.currentTier} R{unit.currentRelicTier}</td>
-                                );
-
-                            }}
-                            {() => {
-                                const unit = findUnitFromGuildUnits(member.playerId, "CEREJUNDA");
-                                return (
-                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentRarity}* G{unit.currentTier} R{unit.currentRelicTier}</td>
-                                );
-
-                            }}
-                            {() => {
-                                const unit = findUnitFromGuildUnits(member.playerId, "MERRIN");
-                                return (
-                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentRarity}* G{unit.currentTier} R{unit.currentRelicTier}</td>
-                                );
-
-                            }}
-                            {() => {
-                                const unit = findUnitFromGuildUnits(member.playerId, "TARFFUL");
-                                return (
-                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentRarity}* G{unit.currentTier} R{unit.currentRelicTier}</td>
-                                );
-
-                            }}
-                            {() => {
-                                const unit = findUnitFromGuildUnits(member.playerId, "SAWGERRERA");
-                                return (
-                                    <td class={fullfillsRequirement(member.playerId, unit, 12)}>{unit.currentRarity}* G{unit.currentTier} R{unit.currentRelicTier}</td>
-                                );
-
-                            }}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        ))}
     </main>
 </Layout>
