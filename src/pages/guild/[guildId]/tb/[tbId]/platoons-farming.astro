@@ -5,29 +5,30 @@ import { getGuilds, getTerritoryBattles, getMissingTerritoryBattleOperationUnits
 import createSlug from "@/lib/createSlug";
 
 export async function getStaticPaths() {
-    const guilds = await getGuilds();
-
+    const startTime = Date.now();
+    
+    // Load all base data in parallel using Live Collections
+    const [guilds, tbs] = await Promise.all([
+        getGuilds(),
+        getTerritoryBattles()
+    ]);
+    
     const params = await Promise.all(
         guilds.map(async (guild) => {
-            const tbs = await getTerritoryBattles();
-
-            const paths = await Promise.all(tbs.flatMap(async (tb) => {
-                const operations = await getMissingTerritoryBattleOperationUnits(tb.id, guild.guildId);
+            return await Promise.all(tbs.map(async (tb) => {
+                const neededUnits = await getMissingTerritoryBattleOperationUnits(tb.tbId, guild.guildId);
 
                 return {
-                    path: `/guilds/{guildId}/tb/{tbId}`,
                     params: { guildId: guild.guildId, tbId: createSlug(tb.name) },
-                    props: { guild, tb, operations }
+                    props: { guild, tb, operations: neededUnits }
                 };
             }));
-
-            return paths.reduce(function(pre, cur) {
-                return pre.concat(cur);
-            });
         })
     );
 
-    return params;
+    const flatParams = params.flat();
+    
+    return flatParams;
 }
 
 const { guild, tb, operations } = Astro.props;

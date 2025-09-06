@@ -4,20 +4,29 @@ import SubNavigation from "@/components/SubNavigation.astro";
 import { getGuilds, getUnits, getGuildPlayers, getGuildPlatoons } from "@/lib/apiClient";
 
 export async function getStaticPaths() {
-    const guilds = await getGuilds();
-    const units = await getUnits();
-
+    const startTime = Date.now();
+    
+    // Load base data in parallel
+    const [guilds, units] = await Promise.all([
+        getGuilds(),
+        getUnits()
+    ]);
+    
     const params = await Promise.all(
-
         guilds.map(async (guild) => {
-            const members = await getGuildPlayers(guild.guildId);
-            const guildUnits = await getGuildPlatoons(guild.guildId);
-
+            const guildStartTime = Date.now();
+            
+            // Load guild-specific data in parallel
+            const [members, guildUnits] = await Promise.all([
+                getGuildPlayers(guild.guildId),
+                getGuildPlatoons(guild.guildId)
+            ]);
+            
             return {
-                    path: `/guilds/{guildId}/farming`,
-                    params: { guildId: guild.guildId },
-                    props: { guild, units, members, guildUnits }
-                };
+                path: `/guilds/{guildId}/farming`,
+                params: { guildId: guild.guildId },
+                props: { guild, units, members, guildUnits }
+            };
         })
     );
 

@@ -5,50 +5,68 @@ import { getGuilds, getUnits, getTerritoryBattles, getGuildPlayers, getGuildPlat
 import createSlug from "@/lib/createSlug";
 
 export async function getStaticPaths() {
-    const guilds = await getGuilds();
-    const units = await getUnits();
-
+    const startTime = Date.now();
+    
+    // Load all base data in parallel using Live Collections
+    const [guilds, units, tbs] = await Promise.all([
+        getGuilds(),
+        getUnits(), 
+        getTerritoryBattles()
+    ]);
+    
     const params = await Promise.all(
         guilds.map(async (guild) => {
-            const tbs = await getTerritoryBattles();
-            const members = await getGuildPlayers(guild.guildId);
-            const guildUnits = await getGuildPlatoons(guild.guildId);
+            const guildStartTime = Date.now();
+            
+            // Load guild-specific data in parallel
+            const [members, guildUnits] = await Promise.all([
+                getGuildPlayers(guild.guildId),
+                getGuildPlatoons(guild.guildId)
+            ]);
 
-            const paths = await Promise.all(tbs.flatMap(async (tb) => {
-                const operations = await getTerritoryBattleOperations(tb.id);
+            const paths = await Promise.all(tbs.map(async (tb) => {
+                const tbStartTime = Date.now();
+                
+                const operations = await getTerritoryBattleOperations(tb.tbId);
 
-                // operations within each phase with same unitBaseId should only be added once with a counter for the quantity
+                if (!operations || !operations.phases) {
+                    console.warn(`No operations data for TB ${tb.tbId}, skipping...`);
+                    return null;
+                }
+
+                // Group operations by phase and count quantities
                 const groupedOperations = {"phases": []};
                 operations.phases.forEach(phase => {
                     groupedOperations.phases.push({"phase": phase.phase, "operations": []});
                     
                     phase.operations.forEach(operation => {
-                        const existingOperation = groupedOperations.phases.find((p) => p.phase === phase.phase).operations.find((o) => o.unitId === operation.unitId);
+                        const existingOperation = groupedOperations.phases
+                            .find((p) => p.phase === phase.phase).operations
+                            .find((o) => o.unitId === operation.unitId);
                         if (existingOperation) {
                             existingOperation.quantity += 1
                         } else {
                             operation.quantity = 1;
-                            groupedOperations.phases.find((p) => p.phase === phase.phase).operations.push(operation);
+                            groupedOperations.phases
+                                .find((p) => p.phase === phase.phase).operations
+                                .push(operation);
                         }
                     });
                 });
 
-                //console.log(groupedOperations.phases[0].operations[0]);
-
                 return {
-                    path: `/guilds/{guildId}/tb/{tbId}`,
                     params: { guildId: guild.guildId, tbId: createSlug(tb.name) },
                     props: { guild, units, members, tb, operations: groupedOperations, guildUnits }
                 };
             }));
 
-            return paths.reduce(function(pre, cur) {
-                return pre.concat(cur);
-            });
+            return paths.filter(path => path !== null);
         })
     );
 
-    return params;
+    const flatParams = params.flat().filter(param => param !== null);
+    
+    return flatParams;
 }
 
 const { guild, units, members, tb, operations, guildUnits } = Astro.props;

@@ -4,10 +4,13 @@ import SubNavigation from "@/components/SubNavigation.astro";
 import { getGuilds, getGuildPlayers } from '@/lib/apiClient';
 
 export async function getStaticPaths() {
+    const startTime = Date.now();
+    
     const guilds = await getGuilds();
 
-    return await Promise.all(
+    const params = await Promise.all(
         guilds.map(async (guild) => {
+            const guildStartTime = Date.now();
             const members = await getGuildPlayers(guild.guildId);
 
             return {
@@ -16,6 +19,8 @@ export async function getStaticPaths() {
             };
         })
     );
+
+    return params;
 }
 
 const { guild, members } = Astro.props;
