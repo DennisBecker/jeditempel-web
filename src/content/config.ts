@@ -22,13 +22,35 @@ export const units = defineCollection({
   }
 });
 
+// Shared guild loader to avoid duplicate API calls
+let guildsCache: any[] | null = null;
+async function getGuildsOnce() {
+  if (guildsCache) return guildsCache;
+  
+  const response = await fetch(`${BASE_URL}/guilds`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch guilds: ${response.status}`);
+  }
+  guildsCache = await response.json();
+  return guildsCache;
+}
+
+// Shared territory battles loader to avoid duplicate API calls
+let territoryBattlesCache: any[] | null = null;
+async function getTerritoryBattlesOnce() {
+  if (territoryBattlesCache) return territoryBattlesCache;
+  
+  const response = await fetch(`${BASE_URL}/territory-battles`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch territory battles: ${response.status}`);
+  }
+  territoryBattlesCache = await response.json();
+  return territoryBattlesCache;
+}
+
 export const territoryBattles = defineCollection({
   loader: async () => {
-    const response = await fetch(`${BASE_URL}/territory-battles`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch territory battles: ${response.status}`);
-    }
-    const tbsData = await response.json();
+    const tbsData = await getTerritoryBattlesOnce();
     
     // Return the territory battles directly, Astro will wrap them automatically
     return tbsData.map((tb: any) => {
@@ -44,11 +66,7 @@ export const territoryBattles = defineCollection({
 
 export const guilds = defineCollection({
   loader: async () => {
-    const response = await fetch(`${BASE_URL}/guilds`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch guilds: ${response.status}`);
-    }
-    const guildsData = await response.json();
+    const guildsData = await getGuildsOnce();
     
     // Return the guilds directly, Astro will wrap them automatically
     return guildsData.map((guild: any) => {
@@ -62,12 +80,8 @@ export const guilds = defineCollection({
 
 export const guildPlayers = defineCollection({
   loader: async () => {
-    // First get all guilds
-    const guildsResponse = await fetch(`${BASE_URL}/guilds`);
-    if (!guildsResponse.ok) {
-      throw new Error(`Failed to fetch guilds: ${guildsResponse.status}`);
-    }
-    const guildsData = await guildsResponse.json();
+    // Use cached guilds
+    const guildsData = await getGuildsOnce();
     
     // Then load all players in parallel
     const playerPromises = guildsData.map(async (guild: any) => {
@@ -92,12 +106,8 @@ export const guildPlayers = defineCollection({
 
 export const guildPlatoons = defineCollection({
   loader: async () => {
-    // First get all guilds
-    const guildsResponse = await fetch(`${BASE_URL}/guilds`);
-    if (!guildsResponse.ok) {
-      throw new Error(`Failed to fetch guilds: ${guildsResponse.status}`);
-    }
-    const guildsData = await guildsResponse.json();
+    // Use cached guilds
+    const guildsData = await getGuildsOnce();
     
     // Then load all platoons in parallel
     const platoonPromises = guildsData.map(async (guild: any) => {
@@ -122,12 +132,8 @@ export const guildPlatoons = defineCollection({
 
 export const territoryBattleOperations = defineCollection({
   loader: async () => {
-    // First get all territory battles
-    const tbsResponse = await fetch(`${BASE_URL}/territory-battles`);
-    if (!tbsResponse.ok) {
-      throw new Error(`Failed to fetch territory battles: ${tbsResponse.status}`);
-    }
-    const tbsData = await tbsResponse.json();
+    // Use cached territory battles
+    const tbsData = await getTerritoryBattlesOnce();
     
     // Then load all operations in parallel
     const operationPromises = tbsData.map(async (tb: any) => {
