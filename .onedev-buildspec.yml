@@ -1,4 +1,4 @@
-version: 39
+version: 40
 jobs:
 - name: Mirror GitHub
   steps:
@@ -10,12 +10,14 @@ jobs:
     withLfs: false
     force: false
     condition: ALWAYS
+    optional: false
   - !PushRepository
     name: push
     remoteUrl: https://github.com/DennisBecker/jeditempel-web
     passwordSecret: access-token
     force: false
     condition: ALWAYS
+    optional: false
   triggers:
   - !ScheduleTrigger
     cronExpression: 0 0/10 * ? * *
@@ -31,11 +33,13 @@ jobs:
     withLfs: false
     withSubmodules: false
     condition: ALWAYS
+    optional: false
   - !GenerateChecksumStep
     name: generate package checksum
     files: package-lock.json
     targetFile: checksum
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    condition: SUCCESSFUL
+    optional: false
   - !SetupCacheStep
     name: set up npm cache
     key: node_modules_@file:checksum@
@@ -44,13 +48,15 @@ jobs:
     paths:
     - node_modules
     uploadStrategy: UPLOAD_IF_NOT_HIT
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    condition: SUCCESSFUL
+    optional: false
   - !CommandStep
     name: build astro page
     runInContainer: true
     image: node:current-alpine
     interpreter: !DefaultInterpreter
       commands: |
+        export NODE_OPTIONS=--max_old_space_size=4096
         npm ci
 
         PUBLIC_BASE_URL=@property:api-base-url@ npm run build
@@ -58,6 +64,7 @@ jobs:
         node_modules/.bin/netlify deploy --no-build --prod --auth @secret:netlify-token@ --site batallion --dir dist
     useTTY: false
     condition: ALWAYS
+    optional: false
   - !CommandStep
     name: deploy to netlify
     runInContainer: true
@@ -67,6 +74,7 @@ jobs:
         node_modules/.bin/netlify deploy --no-build --prod --auth @secret:netlify-token@ --site batallion --dir dist
     useTTY: true
     condition: NEVER
+    optional: false
   paramSpecs:
   - !TextParam
     name: timestamp
